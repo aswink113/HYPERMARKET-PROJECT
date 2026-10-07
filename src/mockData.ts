@@ -1,3 +1,30 @@
+export interface Store {
+  id: string;
+  name: string;
+  code: string;
+  city: string;
+  country: string;
+  address: string;
+  status: 'active' | 'maintenance' | 'setup';
+  cameraCount: number;
+  managerName: string;
+  managerEmail: string;
+  createdAt: string;
+}
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: 'super_admin' | 'store_manager' | 'lp_reviewer' | 'analyst' | 'associate';
+  assignedStoreId: string; // 'ALL' or specific store ID
+  avatar: string;
+  phone: string;
+  department: string;
+  joinedDate: string;
+  permissions: string[];
+}
+
 export interface Camera {
   id: string;
   name: string;
@@ -29,6 +56,7 @@ export interface ProduceBin {
   category: string;
   cameraId: string;
   cameraName: string;
+  storeId: string;
   fillPercentage: number;
   status: 'OK' | 'LOW' | 'LIKELY_EMPTY' | 'VIEW_BLOCKED';
   confidence: number;
@@ -45,6 +73,7 @@ export interface SecurityEvent {
   timestamp: string;
   cameraId: string;
   cameraName: string;
+  storeId: string;
   location: string;
   eventType: 'Possible Concealment' | 'Unusual Dwell' | 'Restricted Area' | 'Blocked Aisle';
   confidence: number;
@@ -67,6 +96,75 @@ export interface AnalyticsToggle {
   model: string;
   requiresReview: boolean;
 }
+
+export const MOCK_STORES: Store[] = [
+  {
+    id: 'STORE-01',
+    name: 'Downtown Hypermarket Flagship',
+    code: 'HYP-DT-01',
+    city: 'Metropolis',
+    country: 'United States',
+    address: '100 Grand Avenue, Suite A',
+    status: 'active',
+    cameraCount: 4,
+    managerName: 'M. Vance',
+    managerEmail: 'm.vance@hypermarket.com',
+    createdAt: '2025-01-15'
+  },
+  {
+    id: 'STORE-02',
+    name: 'Westside Megastore',
+    code: 'HYP-WS-02',
+    city: 'Metropolis',
+    country: 'United States',
+    address: '450 West Plaza Boulevard',
+    status: 'active',
+    cameraCount: 3,
+    managerName: 'Sarah Connor',
+    managerEmail: 's.connor@hypermarket.com',
+    createdAt: '2025-04-10'
+  },
+  {
+    id: 'STORE-03',
+    name: 'North Park Outlet',
+    code: 'HYP-NP-03',
+    city: 'Riverdale',
+    country: 'United States',
+    address: '88 Northside Highway',
+    status: 'setup',
+    cameraCount: 2,
+    managerName: 'Alex Mercer',
+    managerEmail: 'a.mercer@hypermarket.com',
+    createdAt: '2026-08-01'
+  }
+];
+
+export const MOCK_USERS: UserProfile[] = [
+  {
+    id: 'USR-001',
+    name: 'Marcus Vance',
+    email: 'admin@hypermarket.com',
+    role: 'super_admin',
+    assignedStoreId: 'ALL',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80',
+    phone: '+1 (555) 019-2834',
+    department: 'Executive Operations & Vision Security',
+    joinedDate: '2024-11-01',
+    permissions: ['all_stores_access', 'camera_linking', 'manage_stores', 'analytics_config', 'security_audit']
+  },
+  {
+    id: 'USR-002',
+    name: 'Sarah Connor',
+    email: 'sarah.mgr@hypermarket.com',
+    role: 'store_manager',
+    assignedStoreId: 'STORE-02',
+    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80',
+    phone: '+1 (555) 014-9921',
+    department: 'Westside Store Management',
+    joinedDate: '2025-04-12',
+    permissions: ['single_store_access', 'view_cameras', 'restock_tasks']
+  }
+];
 
 export const INITIAL_ANALYTICS_SETTINGS: AnalyticsToggle[] = [
   {
@@ -131,7 +229,7 @@ export const MOCK_CAMERAS: Camera[] = [
     id: 'CAM-01',
     name: 'CAM-01: Produce Overhead Section A',
     location: 'Produce Zone - Bin Array 1-4',
-    storeId: 'STORE-01 (Downtown Hypermarket)',
+    storeId: 'STORE-01',
     status: 'online',
     ipAddress: '192.168.10.101',
     resolution: '4K (3840x2160)',
@@ -155,7 +253,7 @@ export const MOCK_CAMERAS: Camera[] = [
     id: 'CAM-02',
     name: 'CAM-02: Produce Overhead Section B',
     location: 'Produce Zone - Organic Bins 5-8',
-    storeId: 'STORE-01 (Downtown Hypermarket)',
+    storeId: 'STORE-01',
     status: 'online',
     ipAddress: '192.168.10.102',
     resolution: '1080p (1920x1080)',
@@ -179,7 +277,7 @@ export const MOCK_CAMERAS: Camera[] = [
     id: 'CAM-03',
     name: 'CAM-03: Main Entrance & Entry Flow',
     location: 'Main Foyer & Cart Return',
-    storeId: 'STORE-01 (Downtown Hypermarket)',
+    storeId: 'STORE-01',
     status: 'online',
     ipAddress: '192.168.10.103',
     resolution: '4K (3840x2160)',
@@ -203,7 +301,7 @@ export const MOCK_CAMERAS: Camera[] = [
     id: 'CAM-04',
     name: 'CAM-04: Checkout Express Lanes 1-6',
     location: 'Front End Cashier Zone',
-    storeId: 'STORE-01 (Downtown Hypermarket)',
+    storeId: 'STORE-01',
     status: 'warning',
     ipAddress: '192.168.10.104',
     resolution: '1080p (1920x1080)',
@@ -222,6 +320,30 @@ export const MOCK_CAMERAS: Camera[] = [
     posterUrl: 'https://images.unsplash.com/photo-1556740758-90de374c12ad?auto=format&fit=crop&w=600&q=80',
     configuredRegions: 6,
     lastHeartbeat: 'Frame drops detected'
+  },
+  {
+    id: 'CAM-05',
+    name: 'CAM-05: Westside Grocery Aisles 1-3',
+    location: 'Central Pantry Section',
+    storeId: 'STORE-02',
+    status: 'online',
+    ipAddress: '192.168.20.105',
+    resolution: '4K (3840x2160)',
+    fps: 30,
+    fov: '100° Wide Angle',
+    retentionDays: 14,
+    codecs: 'H.265 / RTSP',
+    analyticsActive: {
+      peopleTracking: true,
+      produceAvailability: false,
+      queueDetection: false,
+      safetyMonitoring: true,
+      lossPrevention: false
+    },
+    streamUrl: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=1200&q=80',
+    posterUrl: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=600&q=80',
+    configuredRegions: 3,
+    lastHeartbeat: 'Just now'
   }
 ];
 
@@ -232,6 +354,7 @@ export const MOCK_PRODUCE_BINS: ProduceBin[] = [
     category: 'Fruits - Apples',
     cameraId: 'CAM-01',
     cameraName: 'CAM-01 Overhead Produce',
+    storeId: 'STORE-01',
     fillPercentage: 78,
     status: 'OK',
     confidence: 0.94,
@@ -248,6 +371,7 @@ export const MOCK_PRODUCE_BINS: ProduceBin[] = [
     category: 'Fruits - Tropical',
     cameraId: 'CAM-01',
     cameraName: 'CAM-01 Overhead Produce',
+    storeId: 'STORE-01',
     fillPercentage: 18,
     status: 'LOW',
     confidence: 0.89,
@@ -264,6 +388,7 @@ export const MOCK_PRODUCE_BINS: ProduceBin[] = [
     category: 'Greens - Leafy',
     cameraId: 'CAM-01',
     cameraName: 'CAM-01 Overhead Produce',
+    storeId: 'STORE-01',
     fillPercentage: 5,
     status: 'LIKELY_EMPTY',
     confidence: 0.96,
@@ -280,6 +405,7 @@ export const MOCK_PRODUCE_BINS: ProduceBin[] = [
     category: 'Vegetables - Tomatoes',
     cameraId: 'CAM-01',
     cameraName: 'CAM-01 Overhead Produce',
+    storeId: 'STORE-01',
     fillPercentage: 0,
     status: 'VIEW_BLOCKED',
     confidence: 0.42,
@@ -296,6 +422,7 @@ export const MOCK_PRODUCE_BINS: ProduceBin[] = [
     category: 'Fruits - Tropical',
     cameraId: 'CAM-02',
     cameraName: 'CAM-02 Organic Bins',
+    storeId: 'STORE-01',
     fillPercentage: 82,
     status: 'OK',
     confidence: 0.92,
@@ -312,6 +439,7 @@ export const MOCK_PRODUCE_BINS: ProduceBin[] = [
     category: 'Fruits - Citrus',
     cameraId: 'CAM-02',
     cameraName: 'CAM-02 Organic Bins',
+    storeId: 'STORE-01',
     fillPercentage: 22,
     status: 'LOW',
     confidence: 0.88,
@@ -356,6 +484,7 @@ export const MOCK_SECURITY_EVENTS: SecurityEvent[] = [
     timestamp: '2026-10-07 11:42:15',
     cameraId: 'CAM-01',
     cameraName: 'CAM-01 Produce Overhead',
+    storeId: 'STORE-01',
     location: 'Produce High-Value Display A',
     eventType: 'Possible Concealment',
     confidence: 0.87,
@@ -369,6 +498,7 @@ export const MOCK_SECURITY_EVENTS: SecurityEvent[] = [
     timestamp: '2026-10-07 10:15:30',
     cameraId: 'CAM-03',
     cameraName: 'CAM-03 Entrance Foyer',
+    storeId: 'STORE-01',
     location: 'Entry Corridor B',
     eventType: 'Blocked Aisle',
     confidence: 0.94,
@@ -384,6 +514,7 @@ export const MOCK_SECURITY_EVENTS: SecurityEvent[] = [
     timestamp: '2026-10-07 09:30:12',
     cameraId: 'CAM-01',
     cameraName: 'CAM-01 Produce Overhead',
+    storeId: 'STORE-01',
     location: 'Produce Bin 3 Area',
     eventType: 'Possible Concealment',
     confidence: 0.72,
