@@ -408,7 +408,7 @@ export const App: React.FC = () => {
 
           {activeTab === 'cameraLinking' && (
             <CameraLinking
-              cameras={cameras}
+              cameras={filteredCameras}
               stores={stores}
               onAddCamera={handleAddCamera}
               onDeleteCamera={handleDeleteCamera}
