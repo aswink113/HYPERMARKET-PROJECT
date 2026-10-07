@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Video, ShoppingBag, Sliders, ShieldAlert, Building2, Link, User, Sparkles, LogOut } from 'lucide-react';
+import { LayoutDashboard, Video, ShoppingBag, Sliders, ShieldAlert, Building2, Link, User, Sparkles, LogOut, Clock } from 'lucide-react';
 import type { UserProfile, Store } from '../mockData';
 
 interface SidebarProps {
@@ -31,12 +31,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'overview', label: 'Store Overview', icon: LayoutDashboard },
     { id: 'liveView', label: 'Camera Live Streams', icon: Video },
     { id: 'produceBins', label: 'Produce Fill & Bins', icon: ShoppingBag, badge: lowStockBinCount > 0 ? lowStockBinCount : null, badgeColor: 'badge-warning' },
+    { id: 'staffAttendance', label: 'Staff Attendance Kiosk', icon: Clock },
     { id: 'analyticsSettings', label: 'Analytics & Camera Rules', icon: Sliders },
     { id: 'securityReview', label: 'Security Review Queue', icon: ShieldAlert, badge: pendingSecurityCount > 0 ? pendingSecurityCount : null, badgeColor: 'badge-danger' },
     
     // Admin Exclusive Features
     ...(isSuperAdmin ? [
-      { id: 'storeManagement', label: 'Manage Stores & Branches', icon: Building2 },
+      { id: 'storeManagement', label: 'SaaS Client & Store Admin', icon: Building2 },
       { id: 'cameraLinking', label: 'Link IP Cameras (ONVIF)', icon: Link }
     ] : []),
 
@@ -52,7 +53,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
         <div>
           <h1 style={{ fontSize: '18px', fontWeight: 700, margin: 0, letterSpacing: '-0.5px' }}>HYPERVISION</h1>
-          <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>Camera Analytics & Admin</div>
+          <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>SaaS Camera Analytics</div>
         </div>
       </div>
 

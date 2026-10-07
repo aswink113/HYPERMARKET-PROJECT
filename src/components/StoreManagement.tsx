@@ -1,19 +1,24 @@
 import React, { useState } from 'react';
 import type { Store } from '../mockData';
-import { Store as StoreIcon, Plus, MapPin, Video, Building2 } from 'lucide-react';
+import type { TenantConfig } from '../saasData';
+import { Store as StoreIcon, Plus, MapPin, Building2, Sliders } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface StoreManagementProps {
   stores: Store[];
+  tenantConfigs: Record<string, TenantConfig>;
   onAddStore: (store: Omit<Store, 'id' | 'cameraCount' | 'createdAt'>) => void;
   onSelectActiveStore: (storeId: string) => void;
+  onUpdateTenantConfig: (storeId: string, updatedConfig: Partial<TenantConfig>) => void;
   activeStoreId: string;
 }
 
 export const StoreManagement: React.FC<StoreManagementProps> = ({
   stores,
+  tenantConfigs,
   onAddStore,
   onSelectActiveStore,
+  onUpdateTenantConfig,
   activeStoreId
 }) => {
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -54,10 +59,10 @@ export const StoreManagement: React.FC<StoreManagementProps> = ({
         <div>
           <h2 style={{ fontSize: '20px', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Building2 color="var(--success)" />
-            Hypermarket Store Network & Multi-Location Management
+            Hypermarket SaaS Tenant & Store Network Management
           </h2>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px', margin: 0 }}>
-            Admin portal to provision new store locations, configure camera feeds, and delegate manager access.
+            Super Admin Portal: Customize client module access, lock edit permissions, and provision store tenants.
           </p>
         </div>
 
@@ -66,14 +71,18 @@ export const StoreManagement: React.FC<StoreManagementProps> = ({
           onClick={() => setShowModal(true)}
           style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
         >
-          <Plus size={18} /> Add New Store Branch
+          <Plus size={18} /> Provision New Client / Store
         </button>
       </div>
 
-      {/* Store Cards Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+      {/* Store Cards Grid with SaaS Customizations */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '20px' }}>
         {stores.map((s) => {
           const isActive = s.id === activeStoreId;
+          const tenant = tenantConfigs[s.id] || {
+            cameraControlsAllowed: true,
+            enabledModules: { analyticsSettings: true, securityReview: true }
+          };
 
           return (
             <div 
@@ -102,16 +111,34 @@ export const StoreManagement: React.FC<StoreManagementProps> = ({
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', background: 'var(--bg-subtle)', padding: '10px', borderRadius: 'var(--radius-sm)' }}>
-                <div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>IP Cameras</div>
-                  <div style={{ fontSize: '15px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Video size={14} color="var(--primary)" /> {s.cameraCount} Streams
-                  </div>
+              {/* SaaS Client Configuration Panel */}
+              <div style={{ background: 'var(--bg-subtle)', padding: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Sliders size={14} /> SaaS Client Feature Customization
                 </div>
-                <div>
-                  <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Manager</div>
-                  <div style={{ fontSize: '13px', fontWeight: 600 }}>{s.managerName}</div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                  <span>Camera Edit Rights:</span>
+                  <button
+                    className={`btn ${tenant.cameraControlsAllowed ? 'btn-primary' : 'btn-outline'}`}
+                    style={{ padding: '2px 8px', fontSize: '11px' }}
+                    onClick={() => onUpdateTenantConfig(s.id, { cameraControlsAllowed: !tenant.cameraControlsAllowed })}
+                  >
+                    {tenant.cameraControlsAllowed ? 'Client Editable' : 'Locked (Dashboard Only)'}
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' }}>
+                  <span>Analytics Tab:</span>
+                  <button
+                    className={`btn ${tenant.enabledModules.analyticsSettings ? 'btn-secondary' : 'btn-outline'}`}
+                    style={{ padding: '2px 8px', fontSize: '11px' }}
+                    onClick={() => onUpdateTenantConfig(s.id, {
+                      enabledModules: { ...tenant.enabledModules, analyticsSettings: !tenant.enabledModules.analyticsSettings }
+                    })}
+                  >
+                    {tenant.enabledModules.analyticsSettings ? 'Visible' : 'Hidden'}
+                  </button>
                 </div>
               </div>
 
