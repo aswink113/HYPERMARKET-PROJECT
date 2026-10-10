@@ -1,32 +1,19 @@
-# React + TypeScript + Vite
+# Hypermarket Camera Analytics Project
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+This project contains two distinct application directories:
 
-Currently, two official plugins are available:
+## 1. Backend (`/backend`)
+- Built with **Python / Django REST Framework** (with DB models, serializers, views, and routing for multi-tenant analytics, cameras, store management, and attendance).
+- **Run Backend**:
+  ```bash
+  cd backend
+  python manage.py runserver 8000
+  ```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
-
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## 2. Frontend (`/frontend`)
+- Built with **React, TypeScript, and Vite** providing responsive dashboards and camera streaming controls.
+- **Run Frontend**:
+  ```bash
+  cd frontend
+  npm run dev
+  ```
