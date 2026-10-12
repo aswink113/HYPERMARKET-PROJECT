@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Store, TenantConfig, User, Camera, ProduceBin, SecurityEvent, AttendanceRecord, AnalyticsSetting
+from .models import Store, TenantConfig, User, Camera, ProduceBin, SecurityEvent, AttendanceRecord, AnalyticsSetting, Department, Designation
 
 class StoreSerializer(serializers.ModelSerializer):
     id = serializers.CharField(required=False)
@@ -30,10 +30,11 @@ class TenantConfigSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     assignedStoreId = serializers.CharField(source='assigned_store_id', allow_null=True, required=False)
     joinedDate = serializers.CharField(source='joined_date', allow_null=True, required=False)
+    facePhotos = serializers.JSONField(source='face_photos', required=False)
 
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'username', 'password', 'role', 'assignedStoreId', 'avatar', 'phone', 'department', 'joinedDate', 'permissions']
+        fields = ['id', 'name', 'email', 'username', 'password', 'role', 'assignedStoreId', 'avatar', 'facePhotos', 'phone', 'gender', 'designation', 'department', 'joinedDate', 'permissions']
 
 class CameraSerializer(serializers.ModelSerializer):
     id = serializers.CharField(required=False)
@@ -105,3 +106,36 @@ class AnalyticsSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = AnalyticsSetting
         fields = ['id', 'key', 'name', 'description', 'enabled', 'accuracy', 'dataPurpose', 'model', 'requiresReview']
+
+class DepartmentSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(required=False)
+    floorZone = serializers.CharField(source='floor_zone', allow_null=True, required=False)
+    createdAt = serializers.CharField(source='created_at', allow_null=True, required=False)
+
+    class Meta:
+        model = Department
+        fields = ['id', 'name', 'code', 'description', 'floorZone', 'createdAt']
+
+class DesignationSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(required=False)
+    createdAt = serializers.CharField(source='created_at', allow_null=True, required=False)
+
+    class Meta:
+        model = Designation
+        fields = ['id', 'title', 'department', 'level', 'createdAt']
+
+
+class UnknownFaceSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(required=False)
+    personKey = serializers.CharField(source='person_key')
+    firstSeen = serializers.CharField(source='first_seen')
+    lastSeen = serializers.CharField(source='last_seen')
+    scanCount = serializers.IntegerField(source='scan_count')
+    latestSnapshot = serializers.CharField(source='latest_snapshot')
+    snapshots = serializers.JSONField(required=False)
+    embedding = serializers.JSONField(required=False)
+
+    class Meta:
+        from .models import UnknownFace
+        model = UnknownFace
+        fields = ['id', 'personKey', 'firstSeen', 'lastSeen', 'scanCount', 'latestSnapshot', 'snapshots', 'embedding']

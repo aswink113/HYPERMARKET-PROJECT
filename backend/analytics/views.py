@@ -1,10 +1,11 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, action
-from .models import Store, TenantConfig, User, Camera, ProduceBin, SecurityEvent, AttendanceRecord, AnalyticsSetting
+from .models import Store, TenantConfig, User, Camera, ProduceBin, SecurityEvent, AttendanceRecord, AnalyticsSetting, Department, Designation
 from .serializers import (
     StoreSerializer, TenantConfigSerializer, UserSerializer, CameraSerializer,
-    ProduceBinSerializer, SecurityEventSerializer, AttendanceRecordSerializer, AnalyticsSettingSerializer
+    ProduceBinSerializer, SecurityEventSerializer, AttendanceRecordSerializer, AnalyticsSettingSerializer,
+    DepartmentSerializer, DesignationSerializer
 )
 
 class StoreViewSet(viewsets.ModelViewSet):
@@ -136,8 +137,29 @@ class SecurityEventViewSet(viewsets.ModelViewSet):
     serializer_class = SecurityEventSerializer
 
 class AttendanceRecordViewSet(viewsets.ModelViewSet):
-    queryset = AttendanceRecord.objects.all().order_by('id')
+    queryset = AttendanceRecord.objects.all().order_by('-id')
     serializer_class = AttendanceRecordSerializer
+
+    def create(self, request, *args, **kwargs):
+        existing_ids = set(AttendanceRecord.objects.values_list('id', flat=True))
+        idx = AttendanceRecord.objects.count() + 1
+        while f"ATT-{idx:04d}" in existing_ids:
+            idx += 1
+        
+        data = request.data.copy()
+        data['id'] = f"ATT-{idx:04d}"
+        if not data.get('storeId') and not data.get('store_id'):
+            store = Store.objects.first()
+            if store:
+                data['storeId'] = store.id
+        elif data.get('store_id'):
+            data['storeId'] = data.get('store_id')
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 class AnalyticsSettingViewSet(viewsets.ModelViewSet):
     queryset = AnalyticsSetting.objects.all().order_by('id')
@@ -146,6 +168,26 @@ class AnalyticsSettingViewSet(viewsets.ModelViewSet):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().order_by('id')
     serializer_class = UserSerializer
+
+    def create(self, request, *args, **kwargs):
+        existing_ids = set(User.objects.values_list('id', flat=True))
+        idx = User.objects.count() + 1
+        while f"EMP-{idx:03d}" in existing_ids or f"USR-{idx:03d}" in existing_ids:
+            idx += 1
+        
+        data = request.data.copy()
+        if not data.get('id'):
+            data['id'] = f"EMP-{idx:03d}"
+        if not data.get('joinedDate') and not data.get('joined_date'):
+            data['joined_date'] = '2026-10-12'
+        if not data.get('permissions'):
+            data['permissions'] = ['store_view', 'attendance_view']
+        
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 @api_view(['POST'])
@@ -192,4 +234,83 @@ def login_view(request):
 @api_view(['GET'])
 def status_view(request):
     return Response({'status': 'online', 'database': 'PostgreSQL'})
+
+class DepartmentViewSet(viewsets.ModelViewSet):
+    queryset = Department.objects.all().order_by('name')
+    serializer_class = DepartmentSerializer
+
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy()
+        if not data.get('id'):
+            # Generate ID DEP-01, DEP-02, etc.
+            import uuid
+            count = Department.objects.count() + 1
+            data['id'] = f"DEP-{count:02d}-{uuid.uuid4().hex[:4].upper()}"
+        if not data.get('createdAt') and not data.get('created_at'):
+            from datetime import date
+            data['created_at'] = str(date.today())
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+class DesignationViewSet(viewsets.ModelViewSet):
+    queryset = Designation.objects.all().order_by('title')
+    serializer_class = DesignationSerializer
+
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy()
+        if not data.get('id'):
+            import uuid
+            count = Designation.objects.count() + 1
+            data['id'] = f"DES-{count:02d}-{uuid.uuid4().hex[:4].upper()}"
+        if not data.get('createdAt') and not data.get('created_at'):
+            from datetime import date
+            data['created_at'] = str(date.today())
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class UnknownFaceViewSet(viewsets.ModelViewSet):
+    from .models import UnknownFace
+    from .serializers import UnknownFaceSerializer
+    queryset = UnknownFace.objects.all().order_by('-updated_at')
+    serializer_class = UnknownFaceSerializer
+
+    def create(self, request, *args, **kwargs):
+        from .models import UnknownFace
+        import uuid
+        data = request.data.copy()
+        p_key = data.get('personKey') or data.get('person_key')
+        if p_key:
+            existing = UnknownFace.objects.filter(person_key=p_key).first()
+            if existing:
+                existing.last_seen = data.get('lastSeen') or data.get('last_seen') or existing.last_seen
+                existing.scan_count = data.get('scanCount') or data.get('scan_count') or (existing.scan_count + 1)
+                existing.latest_snapshot = data.get('latestSnapshot') or data.get('latest_snapshot') or existing.latest_snapshot
+                existing.snapshots = data.get('snapshots') or existing.snapshots
+                if data.get('embedding'):
+                    existing.embedding = data.get('embedding')
+                existing.save()
+                serializer = self.get_serializer(existing)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+
+        if not data.get('id'):
+            data['id'] = f"UF-{uuid.uuid4().hex[:8].upper()}"
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @action(detail=False, methods=['delete'])
+    def clear_all(self, request):
+        from .models import UnknownFace
+        UnknownFace.objects.all().delete()
+        return Response({'status': 'All unknown faces cleared'}, status=status.HTTP_200_OK)
 

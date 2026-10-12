@@ -48,6 +48,23 @@ export interface StaffShift {
   approvedStatus: 'Approved' | 'Pending Swap' | 'Draft';
 }
 
+export interface Department {
+  id: string;
+  name: string;
+  code?: string;
+  description?: string;
+  floorZone?: string;
+  createdAt?: string;
+}
+
+export interface Designation {
+  id: string;
+  title: string;
+  department?: string;
+  level?: string;
+  createdAt?: string;
+}
+
 export const MOCK_TENANT_CONFIGS: Record<string, TenantConfig> = {};
 
 export const MOCK_ATTENDANCE_RECORDS: AttendanceRecord[] = [];

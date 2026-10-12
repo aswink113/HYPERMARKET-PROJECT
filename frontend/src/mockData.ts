@@ -23,7 +23,10 @@ export interface UserProfile {
   role: 'super_admin' | 'store_manager' | 'lp_reviewer' | 'analyst' | 'associate';
   assignedStoreId: string; // 'ALL' or specific store ID
   avatar: string;
+  facePhotos?: string[]; // Up to 3 facial photos to increase biometric accuracy
   phone: string;
+  gender?: string;
+  designation?: string;
   department: string;
   joinedDate: string;
   permissions: string[];

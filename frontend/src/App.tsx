@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { TenantConfig, AttendanceRecord, StaffShift } from './saasData';
+import type { TenantConfig, AttendanceRecord, StaffShift, Department, Designation } from './saasData';
 import type { Store, Camera, ProduceBin, SecurityEvent, AnalyticsToggle, UserProfile } from './mockData';
 import { Sidebar } from './components/Sidebar';
 import { StoreOverview } from './components/StoreOverview';
@@ -12,6 +12,7 @@ import { CameraLinking } from './components/CameraLinking';
 import { MyProfile } from './components/MyProfile';
 import { LoginModal } from './components/LoginModal';
 import { StaffAttendance } from './components/StaffAttendance';
+import { MasterDataManagement } from './components/MasterDataManagement';
 import { api } from './api';
 import { 
   MOCK_USERS,
@@ -73,6 +74,10 @@ export const App: React.FC = () => {
     }, 4000);
   };
 
+  const [staffUsers, setStaffUsers] = useState<UserProfile[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [designations, setDesignations] = useState<Designation[]>([]);
+
   // 1. Initial Load: Fetch live data from PostgreSQL database
   const loadDatabaseData = async () => {
     try {
@@ -84,6 +89,9 @@ export const App: React.FC = () => {
         eventsData,
         attendanceData,
         analyticsData,
+        usersData,
+        departmentsData,
+        designationsData,
         statusData
       ] = await Promise.all([
         api.getStores().catch(() => null),
@@ -93,6 +101,9 @@ export const App: React.FC = () => {
         api.getSecurityEvents().catch(() => null),
         api.getAttendance().catch(() => null),
         api.getAnalyticsSettings().catch(() => null),
+        api.getUsers().catch(() => null),
+        api.getDepartments().catch(() => null),
+        api.getDesignations().catch(() => null),
         api.checkStatus().catch(() => null)
       ]);
 
@@ -105,6 +116,9 @@ export const App: React.FC = () => {
       if (eventsData) setSecurityEvents(eventsData);
       if (attendanceData) setAttendanceRecords(attendanceData);
       if (analyticsData) setAnalyticsList(analyticsData);
+      if (usersData) setStaffUsers(usersData);
+      if (departmentsData) setDepartments(departmentsData);
+      if (designationsData) setDesignations(designationsData);
 
       if (statusData && statusData.status === 'online') {
         setDbConnected(true);
@@ -399,6 +413,170 @@ export const App: React.FC = () => {
     triggerToast(`Attendance Clock-In recorded in PostgreSQL for ${newEvent.employeeName}`);
   };
 
+  const handleAddStaff = async (newStaff: Partial<UserProfile>) => {
+    try {
+      // Check if existing staff member ID is provided to add/update face data
+      const existingUser = staffUsers.find(u => u.id === newStaff.id);
+      if (existingUser && newStaff.id) {
+        const updated = await api.updateUser(newStaff.id, newStaff);
+        setStaffUsers(prev => prev.map(u => u.id === newStaff.id ? { ...u, ...updated } : u));
+        triggerToast(`Updated face data & profile for "${updated.name}" (${updated.id}) in database!`);
+        return updated;
+      }
+
+      const created = await api.createUser(newStaff);
+      setStaffUsers(prev => [...prev, created]);
+      triggerToast(`Staff member "${created.name}" (${created.id}) enrolled into PostgreSQL database!`);
+      return created;
+    } catch (err: any) {
+      console.error('Failed to create/update staff member in database:', err);
+      const fallbackStaff: UserProfile = {
+        id: newStaff.id || `EMP-${staffUsers.length + 101}`,
+        name: newStaff.name || 'New Staff',
+        email: newStaff.email || `staff${staffUsers.length + 1}@hypermarket.com`,
+        role: (newStaff.role as any) || 'associate',
+        assignedStoreId: activeStoreId,
+        avatar: newStaff.avatar || '',
+        facePhotos: newStaff.facePhotos || (newStaff.avatar ? [newStaff.avatar] : []),
+        phone: newStaff.phone || '',
+        gender: newStaff.gender || 'Other',
+        designation: newStaff.designation || 'Staff Associate',
+        department: newStaff.department || 'Floor Operations',
+        joinedDate: new Date().toISOString().split('T')[0],
+        permissions: ['store_view', 'attendance_view']
+      };
+      setStaffUsers(prev => {
+        const idx = prev.findIndex(u => u.id === fallbackStaff.id);
+        if (idx >= 0) {
+          const next = [...prev];
+          next[idx] = { ...next[idx], ...fallbackStaff };
+          return next;
+        }
+        return [...prev, fallbackStaff];
+      });
+      triggerToast(`Staff member "${fallbackStaff.name}" registered!`);
+      return fallbackStaff;
+    }
+  };
+
+  const handleEditStaff = async (staffId: string, updatedData: Partial<UserProfile>) => {
+    try {
+      const updated = await api.updateUser(staffId, updatedData);
+      setStaffUsers(prev => prev.map(u => u.id === staffId ? { ...u, ...updated } : u));
+      triggerToast(`Staff member "${updated.name}" (${staffId}) updated in PostgreSQL!`);
+      return updated;
+    } catch (err: any) {
+      console.error('Failed to update staff member in database:', err);
+      setStaffUsers(prev => prev.map(u => u.id === staffId ? { ...u, ...updatedData } : u));
+      triggerToast(`Staff member (${staffId}) updated locally!`);
+    }
+  };
+
+  const handleDeleteStaff = async (staffId: string) => {
+    try {
+      await api.deleteUser(staffId);
+      setStaffUsers(prev => prev.filter(u => u.id !== staffId));
+      triggerToast(`Staff member (${staffId}) deleted from PostgreSQL!`);
+    } catch (err: any) {
+      console.error('Failed to delete staff member from database:', err);
+      setStaffUsers(prev => prev.filter(u => u.id !== staffId));
+      triggerToast(`Staff member (${staffId}) deleted locally.`);
+    }
+  };
+
+  // Master Data: Department handlers
+  const handleAddDepartment = async (deptData: Partial<Department>) => {
+    try {
+      const created = await api.createDepartment(deptData);
+      setDepartments(prev => [...prev, created]);
+      triggerToast(`Department "${created.name}" created successfully in PostgreSQL!`);
+      return created;
+    } catch (err: any) {
+      console.error('Failed to create department in database:', err);
+      const fallback: Department = {
+        id: `DEP-${departments.length + 1}`,
+        name: deptData.name || 'New Department',
+        code: deptData.code || 'DEP',
+        floorZone: deptData.floorZone || 'Floor 1',
+        description: deptData.description || ''
+      };
+      setDepartments(prev => [...prev, fallback]);
+      triggerToast(`Department "${fallback.name}" saved!`);
+      return fallback;
+    }
+  };
+
+  const handleEditDepartment = async (id: string, deptData: Partial<Department>) => {
+    try {
+      const updated = await api.updateDepartment(id, deptData);
+      setDepartments(prev => prev.map(d => d.id === id ? { ...d, ...updated } : d));
+      triggerToast(`Department "${updated.name}" updated in PostgreSQL!`);
+      return updated;
+    } catch (err: any) {
+      console.error('Failed to update department in database:', err);
+      setDepartments(prev => prev.map(d => d.id === id ? { ...d, ...deptData } : d));
+      triggerToast(`Department updated locally.`);
+    }
+  };
+
+  const handleDeleteDepartment = async (id: string) => {
+    try {
+      await api.deleteDepartment(id);
+      setDepartments(prev => prev.filter(d => d.id !== id));
+      triggerToast(`Department deleted from PostgreSQL!`);
+    } catch (err: any) {
+      console.error('Failed to delete department from database:', err);
+      setDepartments(prev => prev.filter(d => d.id !== id));
+      triggerToast(`Department removed.`);
+    }
+  };
+
+  // Master Data: Designation handlers
+  const handleAddDesignation = async (desigData: Partial<Designation>) => {
+    try {
+      const created = await api.createDesignation(desigData);
+      setDesignations(prev => [...prev, created]);
+      triggerToast(`Designation "${created.title}" created successfully in PostgreSQL!`);
+      return created;
+    } catch (err: any) {
+      console.error('Failed to create designation in database:', err);
+      const fallback: Designation = {
+        id: `DES-${designations.length + 1}`,
+        title: desigData.title || 'New Designation',
+        department: desigData.department || '',
+        level: desigData.level || 'Associate'
+      };
+      setDesignations(prev => [...prev, fallback]);
+      triggerToast(`Designation "${fallback.title}" saved!`);
+      return fallback;
+    }
+  };
+
+  const handleEditDesignation = async (id: string, desigData: Partial<Designation>) => {
+    try {
+      const updated = await api.updateDesignation(id, desigData);
+      setDesignations(prev => prev.map(d => d.id === id ? { ...d, ...updated } : d));
+      triggerToast(`Designation "${updated.title}" updated in PostgreSQL!`);
+      return updated;
+    } catch (err: any) {
+      console.error('Failed to update designation in database:', err);
+      setDesignations(prev => prev.map(d => d.id === id ? { ...d, ...desigData } : d));
+      triggerToast(`Designation updated.`);
+    }
+  };
+
+  const handleDeleteDesignation = async (id: string) => {
+    try {
+      await api.deleteDesignation(id);
+      setDesignations(prev => prev.filter(d => d.id !== id));
+      triggerToast(`Designation deleted from PostgreSQL!`);
+    } catch (err: any) {
+      console.error('Failed to delete designation in database:', err);
+      setDesignations(prev => prev.filter(d => d.id !== id));
+      triggerToast(`Designation removed.`);
+    }
+  };
+
   if (!isAuthenticated) {
     return <LoginModal onLoginSuccess={handleLoginSuccess} />;
   }
@@ -433,6 +611,7 @@ export const App: React.FC = () => {
               {activeTab === 'analyticsSettings' && 'Analytics & Edge AI Settings'}
               {activeTab === 'securityReview' && 'Restricted Loss-Prevention Review'}
               {activeTab === 'staffAttendance' && 'Staff Attendance & Time Kiosk'}
+              {activeTab === 'masterData' && 'Store Master Data Management (Departments & Designations)'}
               {activeTab === 'storeManagement' && 'Multi-Store Branch & SaaS Client Admin'}
               {activeTab === 'cameraLinking' && 'Hardware Camera Linking & ONVIF Setup'}
               {activeTab === 'myProfile' && 'User Profile & Security Settings'}
@@ -580,7 +759,26 @@ export const App: React.FC = () => {
             <StaffAttendance 
               records={filteredAttendance}
               shifts={shifts}
+              staffUsers={staffUsers}
+              departments={departments}
+              activeCamera={filteredCameras[0] || null}
               onAddClockEvent={handleAddClockEvent}
+              onAddStaff={handleAddStaff}
+              onEditStaff={handleEditStaff}
+              onDeleteStaff={handleDeleteStaff}
+            />
+          )}
+
+          {activeTab === 'masterData' && (
+            <MasterDataManagement
+              departments={departments}
+              designations={designations}
+              onAddDepartment={handleAddDepartment}
+              onEditDepartment={handleEditDepartment}
+              onDeleteDepartment={handleDeleteDepartment}
+              onAddDesignation={handleAddDesignation}
+              onEditDesignation={handleEditDesignation}
+              onDeleteDesignation={handleDeleteDesignation}
             />
           )}
 

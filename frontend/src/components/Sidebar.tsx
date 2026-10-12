@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Video, ShoppingBag, Sliders, ShieldAlert, Building2, Link, User, Sparkles, LogOut, Clock } from 'lucide-react';
+import { LayoutDashboard, Video, ShoppingBag, Sliders, ShieldAlert, Building2, Link, User, Sparkles, LogOut, Clock, Layers } from 'lucide-react';
 import type { UserProfile, Store } from '../mockData';
 
 interface SidebarProps {
@@ -37,6 +37,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     
     // Admin Exclusive Features
     ...(isSuperAdmin ? [
+      { id: 'masterData', label: 'Master Data (Departments)', icon: Layers },
       { id: 'storeManagement', label: 'SaaS Client & Store Admin', icon: Building2 },
       { id: 'cameraLinking', label: 'Link IP Cameras (ONVIF)', icon: Link }
     ] : []),

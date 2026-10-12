@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Camera, ProduceBin } from '../mockData';
-import { Video, Eye, Settings, Play, Pause, RefreshCw, Maximize2, Layers } from 'lucide-react';
+import { Video, Eye, Settings, Play, Pause, RefreshCw, Maximize2, Layers, Flame } from 'lucide-react';
 
 interface CameraLiveViewProps {
   cameras: Camera[];
@@ -13,9 +13,19 @@ export const CameraLiveView: React.FC<CameraLiveViewProps> = ({ cameras, produce
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [showOverlays, setShowOverlays] = useState<boolean>(true);
   const [showRegions, setShowRegions] = useState<boolean>(true);
+  const [showHeatmap, setShowHeatmap] = useState<boolean>(false);
   const [fullScreen, setFullScreen] = useState<boolean>(false);
   const [streamError, setStreamError] = useState<boolean>(false);
   const [streamKey, setStreamKey] = useState<number>(0);
+  const [currentTime, setCurrentTime] = useState<string>(() => new Date().toLocaleTimeString());
+
+  // Keep live stream clock ticking continuously
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const activeCamera = cameras.find(c => c.id === selectedCameraId) || cameras[0] || null;
   const cameraBins = produceBins.filter(b => activeCamera?.id ? b.cameraId === activeCamera.id : false);
@@ -52,7 +62,16 @@ export const CameraLiveView: React.FC<CameraLiveViewProps> = ({ cameras, produce
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <button 
+            className={`btn ${showHeatmap ? 'btn-primary' : 'btn-outline'}`}
+            style={showHeatmap ? { background: '#ea580c', borderColor: '#ea580c' } : {}}
+            onClick={() => setShowHeatmap(!showHeatmap)}
+          >
+            <Flame size={16} />
+            {showHeatmap ? 'Full-Body Heatmap ON' : 'Full-Body Heatmap OFF'}
+          </button>
+
           <button 
             className={`btn ${showOverlays ? 'btn-primary' : 'btn-outline'}`}
             onClick={() => setShowOverlays(!showOverlays)}
@@ -197,8 +216,99 @@ export const CameraLiveView: React.FC<CameraLiveViewProps> = ({ cameras, produce
               );
             })}
 
+            {/* Full-Body Thermal Heatmap Overlay */}
+            {showHeatmap && (
+              <div 
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  pointerEvents: 'none',
+                  zIndex: 2,
+                  mixBlendMode: 'screen',
+                  overflow: 'hidden'
+                }}
+              >
+                {/* Thermal color map gradient simulation across scene zones */}
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'radial-gradient(circle at 45% 65%, rgba(239, 68, 68, 0.45) 0%, rgba(249, 115, 22, 0.35) 25%, rgba(234, 179, 8, 0.25) 45%, rgba(34, 197, 94, 0.15) 60%, rgba(59, 130, 246, 0.08) 80%, transparent 100%)',
+                  opacity: 0.85
+                }} />
+
+                {/* Body 1 Thermal Signature Blob (Center Active Traffic Zone) */}
+                <div style={{
+                  position: 'absolute',
+                  top: '42%',
+                  left: '42%',
+                  width: '160px',
+                  height: '240px',
+                  borderRadius: '50% 50% 45% 45%',
+                  background: 'radial-gradient(ellipse at center, rgba(255, 0, 0, 0.6) 0%, rgba(255, 130, 0, 0.5) 30%, rgba(255, 220, 0, 0.35) 55%, rgba(0, 180, 255, 0.2) 75%, transparent 100%)',
+                  filter: 'blur(12px)',
+                  transform: 'rotate(-3deg)'
+                }} />
+
+                {/* Body 2 Thermal Signature Blob (Right Walkway Zone) */}
+                <div style={{
+                  position: 'absolute',
+                  top: '48%',
+                  left: '52%',
+                  width: '120px',
+                  height: '200px',
+                  borderRadius: '50% 50% 40% 40%',
+                  background: 'radial-gradient(ellipse at center, rgba(239, 68, 68, 0.5) 0%, rgba(245, 158, 11, 0.4) 35%, rgba(16, 185, 129, 0.2) 65%, transparent 100%)',
+                  filter: 'blur(14px)'
+                }} />
+
+                {/* High Density Heat Spot (Vending / Doorway Entry) */}
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '30%',
+                  width: '130px',
+                  height: '180px',
+                  borderRadius: '50%',
+                  background: 'radial-gradient(circle, rgba(220, 38, 38, 0.45) 0%, rgba(251, 146, 60, 0.3) 40%, rgba(59, 130, 246, 0.1) 75%, transparent 100%)',
+                  filter: 'blur(16px)'
+                }} />
+
+                {/* Thermal Color Scale Bar Legend */}
+                <div style={{
+                  position: 'absolute',
+                  top: '16px',
+                  right: '16px',
+                  background: 'rgba(15, 23, 42, 0.85)',
+                  backdropFilter: 'blur(6px)',
+                  padding: '8px 12px',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                  color: 'white',
+                  fontSize: '11px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
+                    <Flame size={13} color="#f97316" /> Full-Body Thermal Intensity
+                  </div>
+                  <div style={{
+                    width: '130px',
+                    height: '8px',
+                    borderRadius: '4px',
+                    background: 'linear-gradient(to right, #3b82f6, #10b981, #eab308, #f97316, #ef4444, #ffffff)'
+                  }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: '#94a3b8' }}>
+                    <span>Low Flow</span>
+                    <span>Med Dwell</span>
+                    <span>High Heat</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Live Watermark & Rec Indicator */}
-            <div style={{ position: 'absolute', top: '16px', left: '16px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <div style={{ position: 'absolute', top: '16px', left: '16px', display: 'flex', gap: '8px', alignItems: 'center', zIndex: 3 }}>
               <div style={{
                 background: 'rgba(239, 68, 68, 0.85)',
                 color: 'white',
@@ -214,7 +324,7 @@ export const CameraLiveView: React.FC<CameraLiveViewProps> = ({ cameras, produce
                 LIVE RTSP STREAM
               </div>
               <div style={{ background: 'rgba(15, 23, 42, 0.75)', color: '#94a3b8', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace' }}>
-                {new Date().toLocaleTimeString()}
+                {currentTime}
               </div>
             </div>
 

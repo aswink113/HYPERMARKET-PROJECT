@@ -42,7 +42,10 @@ class User(models.Model):
     role = models.CharField(max_length=50, default='store_manager')
     assigned_store_id = models.CharField(max_length=50, blank=True, null=True)
     avatar = models.TextField(blank=True, null=True)
+    face_photos = models.JSONField(default=list, blank=True)
     phone = models.CharField(max_length=50, blank=True, null=True)
+    gender = models.CharField(max_length=20, blank=True, null=True)
+    designation = models.CharField(max_length=150, blank=True, null=True)
     department = models.CharField(max_length=100, blank=True, null=True)
     joined_date = models.CharField(max_length=50, blank=True, null=True)
     permissions = models.JSONField(default=list)
@@ -143,3 +146,50 @@ class AnalyticsSetting(models.Model):
 
     class Meta:
         db_table = 'analytics_settings'
+
+class Department(models.Model):
+    id = models.CharField(max_length=50, primary_key=True)
+    name = models.CharField(max_length=150, unique=True)
+    code = models.CharField(max_length=50, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    floor_zone = models.CharField(max_length=100, blank=True, null=True)
+    created_at = models.CharField(max_length=50, blank=True, null=True)
+
+    class Meta:
+        db_table = 'departments'
+
+    def __str__(self):
+        return self.name
+
+class Designation(models.Model):
+    id = models.CharField(max_length=50, primary_key=True)
+    title = models.CharField(max_length=150, unique=True)
+    department = models.CharField(max_length=150, blank=True, null=True)
+    level = models.CharField(max_length=50, default='Associate')
+    created_at = models.CharField(max_length=50, blank=True, null=True)
+
+    class Meta:
+        db_table = 'designations'
+
+    def __str__(self):
+        return self.title
+
+
+class UnknownFace(models.Model):
+    id = models.CharField(max_length=50, primary_key=True)
+    person_key = models.CharField(max_length=50, unique=True)
+    first_seen = models.CharField(max_length=100)
+    last_seen = models.CharField(max_length=100)
+    scan_count = models.IntegerField(default=1)
+    latest_snapshot = models.TextField()
+    snapshots = models.JSONField(default=list)
+    embedding = models.JSONField(default=list, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'unknown_faces'
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return self.person_key
