@@ -46,6 +46,15 @@ export const ProduceMap: React.FC<ProduceMapProps> = ({ produceBins, onTriggerRe
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
         
         {/* Produce Bin Grid Cards */}
+        {filteredBins.length === 0 ? (
+          <div className="card" style={{ textAlign: 'center', padding: '60px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+            <div style={{ fontSize: '32px' }}>📦</div>
+            <h3 style={{ fontSize: '16px', margin: 0 }}>No Produce Bins Detected</h3>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0, maxWidth: '360px' }}>
+              No produce bins are currently configured for this store. They will appear here once cameras and bin regions are mapped.
+            </p>
+          </div>
+        ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
           {filteredBins.map((bin) => {
             const isSelected = bin.id === activeBin.id;
@@ -113,6 +122,7 @@ export const ProduceMap: React.FC<ProduceMapProps> = ({ produceBins, onTriggerRe
             );
           })}
         </div>
+        )}
 
         {/* Selected Bin Details & Action Panel */}
         {activeBin && (

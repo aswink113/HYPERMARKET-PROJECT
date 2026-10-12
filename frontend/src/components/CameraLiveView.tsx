@@ -14,28 +14,27 @@ export const CameraLiveView: React.FC<CameraLiveViewProps> = ({ cameras, produce
   const [showOverlays, setShowOverlays] = useState<boolean>(true);
   const [showRegions, setShowRegions] = useState<boolean>(true);
   const [fullScreen, setFullScreen] = useState<boolean>(false);
+  const [streamError, setStreamError] = useState<boolean>(false);
+  const [streamKey, setStreamKey] = useState<number>(0);
 
-  const defaultCamera: Camera = {
-    id: 'CAM-01',
-    name: 'Camera 01 - Produce Aisle Main',
-    location: 'Produce Aisle Main',
-    storeId: 'STORE-01',
-    streamUrl: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=1200&q=80',
-    posterUrl: 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=1200&q=80',
-    status: 'online',
-    resolution: '4K (3840x2160)',
-    fps: 30,
-    fov: '110° Wide',
-    retentionDays: 30,
-    configuredRegions: 4,
-    lastHeartbeat: 'Just now',
-    codecs: 'H.265 / ONVIF Profile T',
-    ipAddress: '192.168.1.101',
-    analyticsActive: { peopleTracking: true, produceAvailability: true, queueDetection: true, safetyMonitoring: true, lossPrevention: true }
+  const activeCamera = cameras.find(c => c.id === selectedCameraId) || cameras[0] || null;
+  const cameraBins = produceBins.filter(b => activeCamera?.id ? b.cameraId === activeCamera.id : false);
+
+  // Compute live visual stream URL
+  const getCameraVisualUrl = (cam: Camera | null) => {
+    if (!cam) return '';
+    // If the stream URL is an RTSP stream, route through our Django real-time MJPEG proxy
+    if (cam.streamUrl && cam.streamUrl.startsWith('rtsp://')) {
+      return `http://127.0.0.1:8001/api/cameras/${cam.id}/stream/?t=${streamKey}`;
+    }
+    return cam.streamUrl || `http://127.0.0.1:8001/api/cameras/${cam.id}/stream/?t=${streamKey}`;
   };
 
-  const activeCamera = cameras.find(c => c.id === selectedCameraId) || cameras[0] || defaultCamera;
-  const cameraBins = produceBins.filter(b => activeCamera?.id ? b.cameraId === activeCamera.id : false);
+  const handleSyncFeed = () => {
+    setStreamError(false);
+    setIsPlaying(true);
+    setStreamKey(prev => prev + 1);
+  };
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -80,6 +79,17 @@ export const CameraLiveView: React.FC<CameraLiveViewProps> = ({ cameras, produce
         </div>
       </div>
 
+      {!activeCamera || cameras.length === 0 ? (
+        <div className="card" style={{ textAlign: 'center', padding: '60px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+          <div style={{ padding: '20px', background: 'var(--bg-subtle)', borderRadius: '50%', color: 'var(--text-muted)' }}>
+            <Video size={48} />
+          </div>
+          <h3 style={{ fontSize: '18px', margin: 0 }}>No Cameras Connected Yet</h3>
+          <p style={{ fontSize: '14px', color: 'var(--text-muted)', maxWidth: '440px', margin: 0 }}>
+            No IP or RTSP camera streams have been linked to this store branch. You can connect a new camera stream via the "Link IP Cameras (ONVIF)" tab.
+          </p>
+        </div>
+      ) : (
       <div style={{ display: 'grid', gridTemplateColumns: fullScreen ? '1fr' : '2fr 1fr', gap: '20px' }}>
         {/* Main Video Stream Container */}
         <div className="card" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px', position: 'relative' }}>
@@ -117,10 +127,13 @@ export const CameraLiveView: React.FC<CameraLiveViewProps> = ({ cameras, produce
           }}>
             {/* Stream Image */}
             <img 
-              src={activeCamera.streamUrl} 
+              key={`${activeCamera.id}-${streamKey}`}
+              src={streamError ? (activeCamera.posterUrl || 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=1200&q=80') : getCameraVisualUrl(activeCamera)} 
               alt={activeCamera.name}
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1578916171728-46686eac8d58?auto=format&fit=crop&w=1200&q=80';
+              onLoad={() => setStreamError(false)}
+              onError={() => {
+                console.warn('Real camera stream failed or reconnecting, falling back to snapshot/poster');
+                setStreamError(true);
               }}
               style={{
                 width: '100%',
@@ -229,7 +242,7 @@ export const CameraLiveView: React.FC<CameraLiveViewProps> = ({ cameras, produce
               </button>
               <span style={{ fontSize: '12px', color: '#94a3b8' }}>Stream Quality: 1080p60</span>
               <button 
-                onClick={() => setIsPlaying(true)} 
+                onClick={handleSyncFeed} 
                 style={{ background: 'none', border: 'none', color: '#60a5fa', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px' }}
               >
                 <RefreshCw size={14} /> Sync Feed
@@ -339,6 +352,7 @@ export const CameraLiveView: React.FC<CameraLiveViewProps> = ({ cameras, produce
           </div>
         )}
       </div>
+      )}
     </div>
   );
 };

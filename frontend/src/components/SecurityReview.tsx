@@ -54,49 +54,56 @@ export const SecurityReview: React.FC<SecurityReviewProps> = ({ events, onUpdate
           </h3>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {events.map((evt) => {
-              const isSelected = evt.id === selectedEventId;
+            {events.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--text-muted)', fontSize: '13px' }}>
+                <div style={{ fontSize: '28px', marginBottom: '8px' }}>🛡️</div>
+                No security alerts or incidents flagged for review.
+              </div>
+            ) : (
+              events.map((evt) => {
+                const isSelected = evt.id === selectedEventId;
 
-              return (
-                <div
-                  key={evt.id}
-                  onClick={() => setSelectedEventId(evt.id)}
-                  style={{
-                    padding: '12px',
-                    borderRadius: 'var(--radius-sm)',
-                    border: isSelected ? '2px solid var(--primary)' : '1px solid var(--border-light)',
-                    backgroundColor: isSelected ? 'var(--primary-light)' : 'var(--bg-card)',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    display: 'flex',
-                    gap: '12px'
-                  }}
-                >
-                  <img 
-                    src={evt.thumbnailUrl} 
-                    alt={evt.eventType} 
-                    style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }}
-                  />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 600 }}>{evt.id}</span>
-                      <span className={`badge ${
-                        evt.status === 'Pending Review' ? 'badge-danger' : 
-                        evt.status === 'No Concern' ? 'badge-success' : 'badge-warning'
-                      }`}>
-                        {evt.status}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-main)', marginTop: '2px' }}>
-                      {evt.eventType}
-                    </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                      {evt.cameraName} • {evt.timestamp.split(' ')[1]}
+                return (
+                  <div
+                    key={evt.id}
+                    onClick={() => setSelectedEventId(evt.id)}
+                    style={{
+                      padding: '12px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: isSelected ? '2px solid var(--primary)' : '1px solid var(--border-light)',
+                      backgroundColor: isSelected ? 'var(--primary-light)' : 'var(--bg-card)',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      display: 'flex',
+                      gap: '12px'
+                    }}
+                  >
+                    <img 
+                      src={evt.thumbnailUrl} 
+                      alt={evt.eventType} 
+                      style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 600 }}>{evt.id}</span>
+                        <span className={`badge ${
+                          evt.status === 'Pending Review' ? 'badge-danger' : 
+                          evt.status === 'No Concern' ? 'badge-success' : 'badge-warning'
+                        }`}>
+                          {evt.status}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-main)', marginTop: '2px' }}>
+                        {evt.eventType}
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                        {evt.cameraName} • {evt.timestamp.split(' ')[1]}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
 

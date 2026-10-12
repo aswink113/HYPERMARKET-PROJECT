@@ -141,29 +141,35 @@ export const StoreOverview: React.FC<OverviewProps> = ({
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {produceBins.map((bin) => {
-                const getStatusBadge = (s: string) => {
-                  switch (s) {
-                    case 'OK': return <span className="badge badge-success">OK</span>;
-                    case 'LOW': return <span className="badge badge-warning">LOW</span>;
-                    case 'LIKELY_EMPTY': return <span className="badge badge-danger">EMPTY</span>;
-                    default: return <span className="badge" style={{ background: '#f1f5f9', color: '#64748b' }}>BLOCKED</span>;
-                  }
-                };
+              {produceBins.length === 0 ? (
+                <div style={{ padding: '24px 12px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
+                  No produce bins registered yet.
+                </div>
+              ) : (
+                produceBins.map((bin) => {
+                  const getStatusBadge = (s: string) => {
+                    switch (s) {
+                      case 'OK': return <span className="badge badge-success">OK</span>;
+                      case 'LOW': return <span className="badge badge-warning">LOW</span>;
+                      case 'LIKELY_EMPTY': return <span className="badge badge-danger">EMPTY</span>;
+                      default: return <span className="badge" style={{ background: '#f1f5f9', color: '#64748b' }}>BLOCKED</span>;
+                    }
+                  };
 
-                return (
-                  <div key={bin.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 'var(--radius-sm)', background: 'var(--bg-subtle)' }}>
-                    <div>
-                      <div style={{ fontSize: '13px', fontWeight: 600 }}>{bin.name}</div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Conf: {(bin.confidence * 100).toFixed(0)}%</div>
+                  return (
+                    <div key={bin.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', borderRadius: 'var(--radius-sm)', background: 'var(--bg-subtle)' }}>
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: 600 }}>{bin.name}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Conf: {(bin.confidence * 100).toFixed(0)}%</div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 'bold' }}>{bin.fillPercentage}%</span>
+                        {getStatusBadge(bin.status)}
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 'bold' }}>{bin.fillPercentage}%</span>
-                      {getStatusBadge(bin.status)}
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </div>
         </div>

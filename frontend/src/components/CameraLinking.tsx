@@ -105,6 +105,7 @@ export const CameraLinking: React.FC<CameraLinkingProps> = ({
         fps,
         fov,
         retentionDays,
+        configuredRegions: 0,
         codecs: 'H.265 / RTSP ONVIF Profile T',
         analyticsActive: {
           peopleTracking: true,
@@ -323,7 +324,7 @@ export const CameraLinking: React.FC<CameraLinkingProps> = ({
 
               {/* ONVIF / RTSP IP Camera Authentication */}
               <div style={{ background: '#f8fafc', padding: '14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', justifyBetween: 'space-between' }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span>ONVIF / RTSP Camera Credentials</span>
                   <span className="badge badge-success" style={{ fontSize: '10px' }}>Auth Enabled</span>
                 </div>

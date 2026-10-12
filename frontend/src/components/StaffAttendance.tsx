@@ -127,39 +127,47 @@ export const StaffAttendance: React.FC<StaffAttendanceProps> = ({ records, onAdd
                 </tr>
               </thead>
               <tbody>
-                {records.map((rec) => (
-                  <tr key={rec.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
-                    <td style={{ padding: '12px' }}>
-                      <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{rec.employeeName}</div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{rec.department}</div>
-                    </td>
-
-                    <td style={{ padding: '12px' }}>
-                      <div style={{ fontWeight: 'bold' }}>{rec.clockInTime}</div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Out: {rec.clockOutTime || 'Active Shift'}</div>
-                    </td>
-
-                    <td style={{ padding: '12px' }}>
-                      <span className="badge badge-primary">{rec.authMethod}</span>
-                    </td>
-
-                    <td style={{ padding: '12px' }}>
-                      <span className={`badge ${
-                        rec.status === 'Punctual' ? 'badge-success' : 
-                        rec.status === 'Late Entry' ? 'badge-warning' : 'badge-danger'
-                      }`}>
-                        {rec.status}
-                      </span>
-                    </td>
-
-                    <td style={{ padding: '12px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: rec.cameraOccupancySignal === 'Zone Occupied' ? 'var(--success)' : 'var(--text-muted)' }}>
-                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: rec.cameraOccupancySignal === 'Zone Occupied' ? 'var(--success)' : 'var(--text-muted)' }} />
-                        {rec.cameraOccupancySignal}
-                      </div>
+                {records.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} style={{ padding: '36px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                      No staff attendance records logged today yet. Use the Clock Kiosk on the left to punch in.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  records.map((rec) => (
+                    <tr key={rec.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
+                      <td style={{ padding: '12px' }}>
+                        <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>{rec.employeeName}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{rec.department}</div>
+                      </td>
+
+                      <td style={{ padding: '12px' }}>
+                        <div style={{ fontWeight: 'bold' }}>{rec.clockInTime}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Out: {rec.clockOutTime || 'Active Shift'}</div>
+                      </td>
+
+                      <td style={{ padding: '12px' }}>
+                        <span className="badge badge-primary">{rec.authMethod}</span>
+                      </td>
+
+                      <td style={{ padding: '12px' }}>
+                        <span className={`badge ${
+                          rec.status === 'Punctual' ? 'badge-success' : 
+                          rec.status === 'Late Entry' ? 'badge-warning' : 'badge-danger'
+                        }`}>
+                          {rec.status}
+                        </span>
+                      </td>
+
+                      <td style={{ padding: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: rec.cameraOccupancySignal === 'Zone Occupied' ? 'var(--success)' : 'var(--text-muted)' }}>
+                          <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: rec.cameraOccupancySignal === 'Zone Occupied' ? 'var(--success)' : 'var(--text-muted)' }} />
+                          {rec.cameraOccupancySignal}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
