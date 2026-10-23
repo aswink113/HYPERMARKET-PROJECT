@@ -178,7 +178,10 @@ def get_face_detector(width=1280, height=720):
     global _face_detector
     with _face_detector_lock:
         import os
-        model_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'face_detection_yunet.onnx')
+        backend_dir = os.path.dirname(os.path.dirname(__file__))
+        model_path = os.path.join(backend_dir, 'weights', 'face_detection_yunet.onnx')
+        if not os.path.exists(model_path):
+            model_path = os.path.join(backend_dir, 'face_detection_yunet.onnx')
         if not os.path.exists(model_path):
             return None
         try:
@@ -204,7 +207,10 @@ def get_face_recognizer():
     with _face_recognizer_lock:
         if _face_recognizer is None:
             import os
-            sface_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'face_recognition_sface.onnx')
+            backend_dir = os.path.dirname(os.path.dirname(__file__))
+            sface_path = os.path.join(backend_dir, 'weights', 'face_recognition_sface.onnx')
+            if not os.path.exists(sface_path):
+                sface_path = os.path.join(backend_dir, 'face_recognition_sface.onnx')
             if os.path.exists(sface_path):
                 try:
                     _face_recognizer = cv2.FaceRecognizerSF.create(sface_path, "")

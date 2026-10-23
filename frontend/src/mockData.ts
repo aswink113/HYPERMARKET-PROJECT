@@ -1,112 +1,20 @@
-export interface Store {
-  id: string;
-  name: string;
-  code: string;
-  city: string;
-  country: string;
-  address: string;
-  status: 'active' | 'maintenance' | 'setup';
-  cameraCount: number;
-  managerName: string;
-  managerEmail: string;
-  clientUsername: string;
-  clientPassword: string;
-  createdAt: string;
-}
+export * from './types/store';
+export * from './types/camera';
+export * from './types/produce';
+export * from './types/security';
+export * from './types/user';
+export * from './types/analytics';
 
-export interface UserProfile {
-  id: string;
-  name: string;
-  email: string;
-  username?: string;
-  password?: string;
-  role: 'super_admin' | 'store_manager' | 'lp_reviewer' | 'analyst' | 'associate';
-  assignedStoreId: string; // 'ALL' or specific store ID
-  avatar: string;
-  facePhotos?: string[]; // Up to 3 facial photos to increase biometric accuracy
-  phone: string;
-  gender?: string;
-  designation?: string;
-  department: string;
-  joinedDate: string;
-  permissions: string[];
-}
-
-export interface Camera {
-  id: string;
-  name: string;
-  location: string;
-  storeId: string;
-  status: 'online' | 'offline' | 'warning';
-  ipAddress: string;
-  rtspPort?: string;
-  streamPath?: string;
-  cameraUsername?: string;
-  cameraPassword?: string;
-  resolution: string;
-  fps: number;
-  fov: string;
-  retentionDays: number;
-  codecs: string;
-  analyticsActive: {
-    peopleTracking: boolean;
-    produceAvailability: boolean;
-    queueDetection: boolean;
-    safetyMonitoring: boolean;
-    lossPrevention: boolean;
-  };
-  streamUrl: string;
-  posterUrl: string;
-  configuredRegions: number;
-  lastHeartbeat: string;
-}
-
-export interface ProduceBin {
-  id: string;
-  name: string;
-  category: string;
-  cameraId: string;
-  cameraName: string;
-  storeId: string;
-  fillPercentage: number;
-  status: 'OK' | 'LOW' | 'LIKELY_EMPTY' | 'VIEW_BLOCKED';
-  confidence: number;
-  lastChecked: string;
-  mappedSKU: string;
-  pricePerKg: number;
-  targetWeightKg: number;
-  estVisibleWeightKg: number;
-  polygonPoints: { x: number; y: number }[];
-}
-
-export interface SecurityEvent {
-  id: string;
-  timestamp: string;
-  cameraId: string;
-  cameraName: string;
-  storeId: string;
-  location: string;
-  eventType: 'Possible Concealment' | 'Unusual Dwell' | 'Restricted Area' | 'Blocked Aisle';
-  confidence: number;
-  status: 'Pending Review' | 'No Concern' | 'Needs Follow-Up' | 'Confirmed Incident';
-  reviewedBy?: string;
-  reviewedAt?: string;
-  clipDurationSec: number;
-  thumbnailUrl: string;
-  notes?: string;
-}
-
-export interface AnalyticsToggle {
-  id: string;
-  key: keyof Camera['analyticsActive'];
-  name: string;
-  description: string;
-  enabled: boolean;
-  accuracy: number;
-  dataPurpose: string;
-  model: string;
-  requiresReview: boolean;
-}
+import type {
+  Store,
+  UserProfile,
+  Camera,
+  ProduceBin,
+  SecurityEvent,
+  AnalyticsToggle,
+  HourlyTrafficData,
+  SalesCorrelationData
+} from './types';
 
 export const MOCK_STORES: Store[] = [];
 
@@ -126,16 +34,9 @@ export const MOCK_USERS: UserProfile[] = [
 ];
 
 export const INITIAL_ANALYTICS_SETTINGS: AnalyticsToggle[] = [];
-
 export const MOCK_CAMERAS: Camera[] = [];
-
 export const MOCK_PRODUCE_BINS: ProduceBin[] = [];
-
-export const MOCK_TRAFFIC_HOURLY: any[] = [];
-
-export const MOCK_SALES_CORRELATION: any[] = [];
-
+export const MOCK_TRAFFIC_HOURLY: HourlyTrafficData[] = [];
+export const MOCK_SALES_CORRELATION: SalesCorrelationData[] = [];
 export const MOCK_SECURITY_EVENTS: SecurityEvent[] = [];
-
 export const MOCK_STAFF_TASKS: any[] = [];
-

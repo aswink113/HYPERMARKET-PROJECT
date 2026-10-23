@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { ProduceBin } from '../mockData';
+import type { ProduceBin } from '../../mockData';
 import { RefreshCw, Filter } from 'lucide-react';
 
 interface ProduceMapProps {

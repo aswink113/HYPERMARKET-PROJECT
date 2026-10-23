@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { Department, Designation } from '../saasData';
+import type { Department, Designation } from '../../saasData';
 import { 
   Building2, 
   Briefcase, 

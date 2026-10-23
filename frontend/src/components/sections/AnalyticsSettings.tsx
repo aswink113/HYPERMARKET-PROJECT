@@ -1,5 +1,5 @@
 import React from 'react';
-import type { AnalyticsToggle, Camera } from '../mockData';
+import type { AnalyticsToggle, Camera } from '../../mockData';
 import { Sliders, Shield, Cpu } from 'lucide-react';
 
 interface AnalyticsSettingsProps {

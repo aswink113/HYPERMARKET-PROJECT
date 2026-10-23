@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import type { Camera, ProduceBin } from '../mockData';
+import type { Camera, ProduceBin } from '../../mockData';
 import { Video, Eye, Settings, Play, Pause, RefreshCw, Maximize2, Layers, Flame } from 'lucide-react';
+import { API_BASE_URL } from '../../api';
 
 interface CameraLiveViewProps {
   cameras: Camera[];
@@ -35,9 +36,9 @@ export const CameraLiveView: React.FC<CameraLiveViewProps> = ({ cameras, produce
     if (!cam) return '';
     // If the stream URL is an RTSP stream, route through our Django real-time MJPEG proxy
     if (cam.streamUrl && cam.streamUrl.startsWith('rtsp://')) {
-      return `http://127.0.0.1:8001/api/cameras/${cam.id}/stream/?t=${streamKey}`;
+      return `${API_BASE_URL}/cameras/${cam.id}/stream/?t=${streamKey}`;
     }
-    return cam.streamUrl || `http://127.0.0.1:8001/api/cameras/${cam.id}/stream/?t=${streamKey}`;
+    return cam.streamUrl || `${API_BASE_URL}/cameras/${cam.id}/stream/?t=${streamKey}`;
   };
 
   const handleSyncFeed = () => {

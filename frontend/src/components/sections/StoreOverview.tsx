@@ -1,5 +1,5 @@
 import React from 'react';
-import type { ProduceBin, SecurityEvent, Camera } from '../mockData';
+import type { ProduceBin, SecurityEvent, Camera } from '../../mockData';
 import { 
   Users, 
   ShoppingBag, 

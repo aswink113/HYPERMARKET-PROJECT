@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { Camera, Store } from '../mockData';
+import type { Camera, Store } from '../../mockData';
 import { Video, Plus, Link, Network, Trash2, Edit } from 'lucide-react';
 import confetti from 'canvas-confetti';
 

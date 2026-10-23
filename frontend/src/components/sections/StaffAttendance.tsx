@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import type { AttendanceRecord, StaffShift, Department } from '../saasData';
-import type { UserProfile, Camera } from '../mockData';
+import type { AttendanceRecord, StaffShift, Department } from '../../saasData';
+import type { UserProfile, Camera } from '../../mockData';
 import { 
   Clock, 
   UserCheck, 
@@ -27,6 +27,7 @@ import {
   X
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { BACKEND_URL, API_BASE_URL } from '../../api';
 
 export interface TrackedUnknownPerson {
   personKey: string;
@@ -126,7 +127,7 @@ export const StaffAttendance: React.FC<StaffAttendanceProps> = ({
   useEffect(() => {
     const fetchUnknownFacesFromBackend = async () => {
       try {
-        const res = await fetch('http://127.0.0.1:8001/api/unknown-faces/?t=' + Date.now());
+        const res = await fetch(`${API_BASE_URL}/unknown-faces/?t=${Date.now()}`);
         if (res.ok) {
           const data: TrackedUnknownPerson[] = await res.json();
           if (Array.isArray(data) && data.length > 0) {
@@ -228,7 +229,7 @@ export const StaffAttendance: React.FC<StaffAttendanceProps> = ({
     });
 
     // Also persist asynchronously to backend PostgreSQL endpoint
-    fetch('http://127.0.0.1:8001/api/unknown-faces/', {
+    fetch(`${API_BASE_URL}/unknown-faces/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -369,7 +370,7 @@ export const StaffAttendance: React.FC<StaffAttendanceProps> = ({
 
         setIsCurrentlyChecking(true);
         try {
-          const res = await fetch(`http://127.0.0.1:8001/api/cameras/${activeCamera.id}/scan-face/?t=${Date.now()}`);
+          const res = await fetch(`${API_BASE_URL}/cameras/${activeCamera.id}/scan-face/?t=${Date.now()}`);
           const data = await res.json();
           setLastScanTime(new Date().toLocaleTimeString());
 
@@ -380,7 +381,7 @@ export const StaffAttendance: React.FC<StaffAttendanceProps> = ({
               matchedStaff = staffUsers.find(u => u.id === data.matchedStaff.id) || (data.matchedStaff as UserProfile);
             }
 
-            const snapUrl = data.faceCrop || (data.snapshotUrl ? `http://127.0.0.1:8001${data.snapshotUrl}` : `http://127.0.0.1:8001/api/cameras/${activeCamera.id}/snapshot/?t=${Date.now()}`);
+            const snapUrl = data.faceCrop || (data.snapshotUrl ? `${BACKEND_URL}${data.snapshotUrl}` : `${API_BASE_URL}/cameras/${activeCamera.id}/snapshot/?t=${Date.now()}`);
 
             const newAlert = {
               id: `FACE-${Date.now().toString().slice(-4)}`,
@@ -415,7 +416,7 @@ export const StaffAttendance: React.FC<StaffAttendanceProps> = ({
     setIsScanningFace(true);
     setScanMessage('');
     try {
-      const res = await fetch(`http://127.0.0.1:8001/api/cameras/${activeCamera.id}/scan-face/?t=${Date.now()}`);
+      const res = await fetch(`${API_BASE_URL}/cameras/${activeCamera.id}/scan-face/?t=${Date.now()}`);
       const data = await res.json();
       setIsScanningFace(false);
 
@@ -432,7 +433,7 @@ export const StaffAttendance: React.FC<StaffAttendanceProps> = ({
         matchedStaff = staffUsers.find(u => u.id === data.matchedStaff.id) || (data.matchedStaff as UserProfile);
       }
 
-      const snapUrl = data.faceCrop || (data.snapshotUrl ? `http://127.0.0.1:8001${data.snapshotUrl}` : `http://127.0.0.1:8001/api/cameras/${activeCamera.id}/snapshot/?t=${Date.now()}`);
+      const snapUrl = data.faceCrop || (data.snapshotUrl ? `${BACKEND_URL}${data.snapshotUrl}` : `${API_BASE_URL}/cameras/${activeCamera.id}/snapshot/?t=${Date.now()}`);
 
       const newAlert = {
         id: `FACE-${Date.now().toString().slice(-4)}`,
@@ -489,7 +490,7 @@ export const StaffAttendance: React.FC<StaffAttendanceProps> = ({
     else setAddCapturingSlotIndex(slotIdx);
 
     try {
-      const snapUrl = `http://127.0.0.1:8001/api/cameras/${activeCamera.id}/snapshot/?t=${Date.now()}`;
+      const snapUrl = `${API_BASE_URL}/cameras/${activeCamera.id}/snapshot/?t=${Date.now()}`;
       const res = await fetch(snapUrl);
       const blob = await res.blob();
       const reader = new FileReader();

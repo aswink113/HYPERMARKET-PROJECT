@@ -1,0 +1,18 @@
+# Core Web Framework & APIs
+Django>=6.0.0,<7.0.0
+djangorestframework>=3.14.0
+django-cors-headers>=4.3.0
+
+# Database Connectivity
+psycopg[binary]>=3.2.0
+psycopg2-binary>=2.9.9
+
+# Computer Vision & Machine Learning
+opencv-python-headless>=4.10.0
+numpy>=1.26.0
+Pillow>=10.0.0
+
+# Configuration & Utilities
+python-dotenv>=1.0.0
+PyYAML>=6.0
+reportlab>=4.0.0

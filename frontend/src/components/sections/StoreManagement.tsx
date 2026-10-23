@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import type { Store } from '../mockData';
-import type { TenantConfig } from '../saasData';
+import type { Store } from '../../mockData';
+import type { TenantConfig } from '../../saasData';
 import {
   Store as StoreIcon,
   Plus,

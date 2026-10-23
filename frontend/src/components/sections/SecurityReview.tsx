@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { SecurityEvent } from '../mockData';
+import type { SecurityEvent } from '../../mockData';
 import { ShieldAlert, AlertOctagon, HelpCircle, Film, Lock } from 'lucide-react';
 import confetti from 'canvas-confetti';
 

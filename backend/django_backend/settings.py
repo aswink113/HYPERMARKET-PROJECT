@@ -2,9 +2,11 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 
-load_dotenv(os.path.join(Path(__file__).resolve().parent.parent.parent, '.env'))
-
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from backend directory, with fallback to root directory
+load_dotenv(os.path.join(BASE_DIR, '.env'))
+load_dotenv(os.path.join(BASE_DIR.parent, '.env'))
 
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-2tup_-d513cp&z@j1flud!m)t#a$i!!kjmzr2tnpudm&-)8syv")
 
@@ -56,6 +58,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'django_backend.wsgi.application'
 
+DB_ENGINE = os.getenv("DB_ENGINE", "django.db.backends.postgresql")
 DB_USER = os.getenv("DB_USER", "postgres")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "aswink@1")
 DB_HOST = os.getenv("DB_HOST", "localhost")
@@ -64,7 +67,7 @@ DB_NAME = os.getenv("DB_NAME", "ipcamera")
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': DB_ENGINE,
         'NAME': DB_NAME,
         'USER': DB_USER,
         'PASSWORD': DB_PASSWORD,

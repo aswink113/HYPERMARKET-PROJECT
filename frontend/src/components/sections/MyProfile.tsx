@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import type { UserProfile, Store } from '../mockData';
+import type { UserProfile, Store } from '../../mockData';
 import { User, Shield, Key, CheckCircle2, Save, Camera, ZoomIn, ZoomOut, RotateCw, Check, X, Crop } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
